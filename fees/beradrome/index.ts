@@ -1,6 +1,7 @@
 import { Adapter, FetchOptions, FetchResultV2 } from "../../adapters/types";
 import { Balances } from "@defillama/sdk";
 
+
 const VOTER = "0xd7ea36ECA1cA3E73bC262A6D05DB01E60AE4AD47";
 const BERO = "0x7838CEc5B11298Ff6a9513Fa385621B765C74174";
 const DEPLOYMENT_BLOCK = 784968;
