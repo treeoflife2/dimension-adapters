@@ -6,6 +6,7 @@ const URL = "https://api.hyperliquid.xyz/info";
 
 interface Response {
   dayNtlVlm: string;
+  openInterest: string;
 }
 
 const fetch = async (timestamp: number) => {
@@ -14,9 +15,13 @@ const fetch = async (timestamp: number) => {
   const dailyVolume = respose.reduce((acc, item) => {
     return acc + Number(item.dayNtlVlm);
   },0);
+  const dailyOpenInterest = respose.reduce((acc, item) => {
+    return acc + Number(item.openInterest);
+  },0);
 
   return {
     dailyVolume: dailyVolume?.toString(),
+    dailyOpenInterest: dailyOpenInterest?.toString(),
     timestamp: dayTimestamp,
   };
 };
@@ -26,6 +31,7 @@ const adapter: SimpleAdapter = {
     "hyperliquid": {
       fetch,
       start: '2023-02-25',
+      runAtCurrTime: true,
     },
   }
 };
