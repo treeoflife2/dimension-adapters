@@ -151,8 +151,7 @@ type VotingReward = {
   };
 };
 
-const GOVERNANCE_SUBGRAPH_URL =
-  "https://subgraph.satsuma-prod.com/957f3120c2b2/perspective/governance/api";
+const GOVERNANCE_SUBGRAPH_URL = "https://subgraph.satsuma-prod.com/957f3120c2b2/perspective/governance/api";
 
 const fetchDailyFeesAndVolume = async ({
   chain,
@@ -265,14 +264,8 @@ const methodology = {
 const adapter: SimpleAdapter = {
   version: 2,
   methodology,
-  adapter: {},
+  fetch,
+  adapter: chains,
 };
-
-for (const [chain, config] of Object.entries(chains)) {
-  (adapter.adapter as any)[chain] = {
-    fetch,
-    start: config.start,
-  };
-}
 
 export default adapter;
