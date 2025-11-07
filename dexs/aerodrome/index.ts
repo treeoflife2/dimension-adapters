@@ -6,10 +6,25 @@ import { ethers } from "ethers";
 import PromisePool from "@supercharge/promise-pool";
 import { handleBribeToken } from "./utils";
 
-const CONFIG = {
-  PoolFactory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da',
-  voter: '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
-  GaugeFactory: '0x35f35ca5b132cadf2916bab57639128eac5bbcb5'
+// const CONFIG = {
+//   PoolFactory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da',
+//   voter: '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
+//   GaugeFactory: '0x35f35ca5b132cadf2916bab57639128eac5bbcb5'
+// }
+
+const chainConfig = {
+  [CHAIN.BASE]: {
+    PoolFactory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da',
+    voter: '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
+    GaugeFactory: '0x35f35ca5b132cadf2916bab57639128eac5bbcb5',
+    start: '2023-08-28'
+  },
+  [CHAIN.CELO]: {
+    PoolFactory: '0x31832f2a97Fd20664D76Cc421207669b55CE4BC0',
+    voter: '0x97cDBCe21B6fd0585d29E539B1B99dAd328a1123',
+    GaugeFactory: '0x42e403b73898320f23109708b0ba1Ae85838C445',
+    start: '2025-03-01'
+  }
 }
 
 const event_topics = {
@@ -31,6 +46,7 @@ const abis = {
 const getBribes = async (fetchOptions: FetchOptions): Promise<{ dailyBribesRevenue: sdk.Balances }> => {
   const { createBalances, startTimestamp } = fetchOptions
   const iface = new ethers.Interface([eventAbis.event_notify_reward]);
+  const CONFIG = chainConfig[fetchOptions.chain]
 
   const dailyBribesRevenue = createBalances()
   const logs_gauge_created = await fetchOptions.getLogs({ target: CONFIG.voter, fromBlock: 3200601, eventAbi: eventAbis.event_gaugeCreated, skipIndexer: true, })
@@ -58,12 +74,17 @@ const getVolumeAndFees = async (fromBlock: number, toBlock: number, fetchOptions
   const { createBalances, api, chain } = fetchOptions
   const dailyVolume = createBalances()
   const dailyFees = createBalances()
+  const CONFIG = chainConfig[fetchOptions.chain]
 
   const rawPools = await fetchOptions.getLogs({ target: CONFIG.PoolFactory, fromBlock: 3200668, eventAbi: eventAbis.event_pool_created, onlyArgs: true, cacheInCloud: true, skipIndexer: true, })
+
+  console.log('rawPools length: ', rawPools.length)
 
   const fees = await api.multiCall({
     abi: abis.fees, target: CONFIG.PoolFactory, calls: rawPools.map(i => ({ params: [i.pool, i.stable] }))
   })
+  console.log('fees length: ', fees.length)
+
   const poolInfoMap = {} as any
   const aeroPoolSet = new Set()
   rawPools.forEach(({ token0, token1, stable, pool }, index) => {
@@ -73,13 +94,10 @@ const getVolumeAndFees = async (fromBlock: number, toBlock: number, fetchOptions
     aeroPoolSet.add(pool)
   })
 
-
   const blockStep = 2000;
   let i = 0;
   let startBlock = fromBlock;
   let ranges: any = []
-
-
 
   while (startBlock < toBlock) {
     const endBlock = Math.min(startBlock + blockStep - 1, toBlock)
@@ -140,12 +158,8 @@ const fetch = async (_t: any, _a: any, options: FetchOptions): Promise<FetchResu
 
 const adapters: SimpleAdapter = {
   version: 1,
-  adapter: {
-    [CHAIN.BASE]: {
-      fetch,
-      start: '2023-08-28'
-    }
-  }
+  fetch,
+  adapter: chainConfig,
 }
 
 export default adapters

@@ -6,12 +6,20 @@ import { ethers } from "ethers";
 import PromisePool from "@supercharge/promise-pool";
 import { handleBribeToken } from "../aerodrome/utils";
 
-const CONFIG = {
-  factory: '0x5e7BB104d84c7CB9B682AaC2F3d509f5F406809A',
-  voter: '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
-  GaugeFactory: '0xd30677bd8dd15132f251cb54cbda552d2a05fb08'
+const chainConfig = {
+  [CHAIN.BASE]: {
+    factory: '0x5e7BB104d84c7CB9B682AaC2F3d509f5F406809A',
+    voter: '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
+    GaugeFactory: '0xd30677bd8dd15132f251cb54cbda552d2a05fb08',
+    start: '2024-05-03'
+  },
+  [CHAIN.CELO]: {
+    factory: '0x04625B046C69577EfC40e6c0Bb83CDBAfab5a55F',
+    voter: '0x97cDBCe21B6fd0585d29E539B1B99dAd328a1123',
+    GaugeFactory: '0xeAD23f606643E387a073D0EE8718602291ffaAeB',
+    start: '2025-03-01'
+  }
 }
-
 
 const eventAbis = {
   event_poolCreated: 'event PoolCreated(address indexed token0, address indexed token1, int24 indexed tickSpacing, address pool)',
@@ -25,12 +33,12 @@ const abis = {
   fee: 'uint256:fee'
 }
 
-
 const getBribes = async (fetchOptions: FetchOptions): Promise<{ dailyBribesRevenue: sdk.Balances }> => {
-  const { createBalances, getLogs, startTimestamp } = fetchOptions
+  const { createBalances, getLogs, startTimestamp, chain } = fetchOptions
   const iface = new ethers.Interface([eventAbis.event_notify_reward]);
 
   const dailyBribesRevenue = createBalances()
+  const CONFIG = chainConfig[chain]
   const logs_gauge_created = await getLogs({ target: CONFIG.voter, fromBlock: 13843704, eventAbi: eventAbis.event_gaugeCreated, skipIndexer: true, })
   if (!logs_gauge_created?.length) return { dailyBribesRevenue };
 
@@ -57,6 +65,7 @@ const fetch = async (_: any, _1: any, fetchOptions: FetchOptions): Promise<Fetch
   const { api, createBalances, getToBlock, getFromBlock, chain, getLogs } = fetchOptions
   const dailyVolume = createBalances()
   const dailyFees = createBalances()
+  const CONFIG = chainConfig[chain]
   const [toBlock, fromBlock] = await Promise.all([getToBlock(), getFromBlock()])
 
   const rawPools = await getLogs({ target: CONFIG.factory, fromBlock: 13843704, toBlock, eventAbi: eventAbis.event_poolCreated, skipIndexer: true, })
@@ -129,11 +138,7 @@ const fetch = async (_: any, _1: any, fetchOptions: FetchOptions): Promise<Fetch
 
 const adapters: SimpleAdapter = {
   version: 1,
-  adapter: {
-    [CHAIN.BASE]: {
-      fetch: fetch as any,
-      start: '2024-05-03',
-    }
-  }
+  fetch,
+  adapter: chainConfig,
 }
 export default adapters;
