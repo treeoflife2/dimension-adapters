@@ -192,9 +192,9 @@ const adapter: SimpleAdapter = {
     [CHAIN.XRPL]: { start: "2025-01-01" },
   },
   methodology: {
-    Fees: "ERC20 token inflows into PagCrypto-controlled wallets on supported EVM chains (Base/Polygon).",
-    Revenue: "Same as Fees.",
-    ProtocolRevenue: "Same as Fees.",
+    Fees: "Transaction fees paid by users for fiat to crypto settlements.",
+    Revenue: "Revenue represents fees collected by PagCrypto from fiat to crypto settlements.",
+    ProtocolRevenue: "Revenue represents fees collected by PagCrypto from fiat to crypto settlements.",
   },
 };
 
