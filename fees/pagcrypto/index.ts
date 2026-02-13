@@ -1,5 +1,5 @@
 import { CHAIN } from "../../helpers/chains";
-import { FetchOptions, SimpleAdapter } from "../../adapters/types";
+import { Dependencies, FetchOptions, SimpleAdapter } from "../../adapters/types";
 import { addTokensReceived, getETHReceived, getSolanaReceived } from "../../helpers/token";
 import ADDRESSES from "../../helpers/coreAssets.json";
 
@@ -80,7 +80,7 @@ async function fetchSolanaInflows(options: FetchOptions) {
   return dailyFees;
 }
 
-const fetch = async (options: FetchOptions) => {
+const fetch = async (_a: any, _b: any, options: FetchOptions) => {
   let dailyFees = options.createBalances();
   if ([CHAIN.XRPL, CHAIN.TRON].includes(options.chain as CHAIN)) {
     throw new Error("Fetching fees for XRPL and TRON is not supported yet");
@@ -101,7 +101,7 @@ const fetch = async (options: FetchOptions) => {
 
 
 const adapter: SimpleAdapter = {
-  version: 2,
+  version: 1,
   fetch,
   adapter: {
     [CHAIN.BASE]: { start: "2025-01-01" },
@@ -110,6 +110,7 @@ const adapter: SimpleAdapter = {
     // [CHAIN.TRON]: { start: "2025-01-01" },
     // [CHAIN.XRPL]: { start: "2025-01-01" },
   },
+  dependencies: [Dependencies.ALLIUM],
   methodology: {
     Fees: "Transaction fees paid by users for fiat to crypto settlements.",
     Revenue: "Revenue represents fees collected by PagCrypto from fiat to crypto settlements.",
