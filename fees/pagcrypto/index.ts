@@ -89,7 +89,6 @@ const fetch = async (options: FetchOptions) => {
     dailyFees = await fetchSolanaInflows(options);
   }
   if ([CHAIN.BASE, CHAIN.POLYGON].includes(options.chain as CHAIN)) {
-    console.log(options.chain);
     dailyFees = await fetchEvmInflows(options);
   }
 
